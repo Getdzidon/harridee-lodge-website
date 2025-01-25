@@ -1,7 +1,5 @@
 name: Deploy harridee webapp to EC2 
 
-name: Deploy harridee webapp to EC2
-
 on:
   push:
     branches:
