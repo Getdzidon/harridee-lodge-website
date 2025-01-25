@@ -6,8 +6,8 @@ on:
 
 
 env:
-  AWS_APP_NAME: resume-app-dee
-  AWS_ENV_NAME: Resume-app-dee-env
+  AWS_APP_NAME: harridee-webapp
+  AWS_ENV_NAME: harridee-webapp-env
 
 
 jobs:

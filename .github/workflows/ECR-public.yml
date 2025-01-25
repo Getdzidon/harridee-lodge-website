@@ -8,7 +8,7 @@ on:
 
 env:
   CONTAINER_REGISTRY: public.ecr.aws  # Prefix for public ECR repositories
-  IMAGE_NAME: resume-app-donatus
+  IMAGE_NAME: harridee-webapp
 
 permissions:
   id-token: write
