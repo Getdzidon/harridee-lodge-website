@@ -76,11 +76,11 @@ resource "aws_s3_bucket_website_configuration" "harridee_website_config" {
 
   # Static website hosting settings
   index_document {
-    suffix = "index.html"
+    suffix = "app/index.html"
   }
 
   error_document {
-    key = "404.html"
+    key = "app/404.html"
   }
 }
 
@@ -134,7 +134,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "CloudFront distribution for ${var.bucket_name}"
-  default_root_object = "index.html"
+  default_root_object = "app/index.html"
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
