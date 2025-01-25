@@ -32,3 +32,6 @@ override.tf.json
 # General system files to exclude
 .DS_Store
 Thumbs.db
+
+# Other
+*.txt
