@@ -1,0 +1,39 @@
+# this workflow builds a docker image of your resume App then push it to AWS ECR Public registry
+name: Build and push to AWS ECR Public registry
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  CONTAINER_REGISTRY: public.ecr.aws  # Prefix for public ECR repositories
+  IMAGE_NAME: resume-app-donatus
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  docker_build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}  # Set your region
+
+      - name: Login to Amazon ECR
+        run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/h9m6e8g1
+
+      - name: Docker Build
+        run: docker build -t ${{ env.CONTAINER_REGISTRY }}/${{ secrets.ECR_PUBLIC_REPO_ALIAS }}/${{ env.IMAGE_NAME }}:public .
+
+      - name: Push to Public ECR
+        run: docker push ${{ env.CONTAINER_REGISTRY }}/${{ secrets.ECR_PUBLIC_REPO_ALIAS }}/${{ env.IMAGE_NAME }}:public

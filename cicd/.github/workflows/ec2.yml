@@ -1,23 +1,19 @@
-name: Deploy WebApp to EC2
-
+name: Deploy harridee webapp to EC2
 
 on:
   push:
     branches:
       - main
 
-
 jobs:
   deploy:
-    environment: prod
+    environment: Dev
     name: Deploy to EC2
     runs-on: ubuntu-latest
-
 
     steps:
       - name: Checkout the files
         uses: actions/checkout@v4
-
 
       - name: Deploy to EC2 Server
         uses: easingthemes/ssh-deploy@main
@@ -26,7 +22,6 @@ jobs:
           REMOTE_HOST: ${{ secrets.HOST_DNS }}
           REMOTE_USER: ${{ secrets.EC2_USER }}
           TARGET: ${{ secrets.TARGET_DIR }}
-
 
       - name: Executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@master

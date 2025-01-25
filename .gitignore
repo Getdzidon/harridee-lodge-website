@@ -1,0 +1,34 @@
+# Local Terraform state
+*.tfstate
+*.tfstate.backup
+
+# Crash log files
+crash.log
+
+# Terraform variable files that often contain sensitive data
+*.tfvars
+*.tfvars.json
+
+# Ignore override files as they are usually local and not shared
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform execution plan files
+*.tfplan
+
+# .terraform directory for local Terraform configurations
+.terraform/
+
+# Terraform lock file
+.terraform.lock.hcl
+
+# Sensitive files for credentials or keys (add these if they exist in your repo)
+*.pem
+*.key
+*.crt
+
+# General system files to exclude
+.DS_Store
+Thumbs.db
