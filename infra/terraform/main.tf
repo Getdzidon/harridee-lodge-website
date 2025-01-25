@@ -11,7 +11,7 @@ provider "aws" {
   region = var.region
 }
 
-# Security Group Resource
+###################### Security Group Resource ######################
 resource "aws_security_group" "default_vpc_sg" {
   name        = "${var.instance_name}-sg"
   description = "Allow SSH and HTTP access"
@@ -48,7 +48,7 @@ data "aws_vpc" "default" {
   default = true
 }
 
-# EC2 Instance Resource
+###################### EC2 Instance Resource ######################
 resource "aws_instance" "example" {
   ami                    = var.ami            # Reference a variable for AMI
   instance_type          = var.instance_type  # Reference a variable for instance type
@@ -60,7 +60,7 @@ resource "aws_instance" "example" {
   }
 }
 
-# S3 Bucket Resource (Main Bucket Configuration)
+#################### S3 Bucket Resource (Main Bucket Configuration) ####################
 resource "aws_s3_bucket" "harridee" {
   bucket = var.bucket_name
 
@@ -113,7 +113,7 @@ resource "aws_s3_bucket_policy" "harridee_bucket_policy" {
   EOT
 }
 
-############# CloudFront Distribution Resource ###########
+########################## CloudFront Distribution Resource ##########################
 # CloudFront Origin Access Control (Define it explicitly)
 resource "aws_cloudfront_origin_access_control" "default" {
   name                              = "default-oac"

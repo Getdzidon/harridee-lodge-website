@@ -1,5 +1,7 @@
 name: Deploy harridee webapp to EC2 
 
+name: Deploy harridee webapp to EC2
+
 on:
   push:
     branches:
@@ -23,39 +25,20 @@ jobs:
           REMOTE_USER: ${{ secrets.EC2_USER }}
           TARGET: ${{ secrets.TARGET_DIR }}
 
-      - name: Install Apache2 and deploy app files to EC2
+      - name: Executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_DNS }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Update the package list
-            sudo apt-get update -y
-
-            # Install Apache2 if it's not already installed
+            sudo apt-get -y update
             sudo apt-get install -y apache2
-
-            # Start Apache2 and enable it to start on boot
+            sudo systemctl daemon-reload
             sudo systemctl start apache2
             sudo systemctl enable apache2
-
-            # Remove any existing content from the web directory
+            cd home/app
+            # Remove existing contents of /var/www/html
             sudo rm -rf /var/www/html/*
-
-            # Move the app files from the 'app/' directory to the web directory
-            cd ${{ secrets.TARGET_DIR }}/app
-            sudo mv * /var/www/html/
-
-            # Restart Apache to make sure it serves the new files
-            sudo systemctl restart apache2
-
-      - name: Confirm Apache is serving the app
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST_DNS }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Check if Apache2 is running and the content is served
-            curl http://localhost
+            # Move new files to /var/www/html
+            sudo mv * /var/www/html
