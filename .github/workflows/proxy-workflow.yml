@@ -1,0 +1,20 @@
+name: Proxy Workflow
+
+on:
+  push:
+    branches:
+      - main  # Adjust branch as needed
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Trigger Workflows in cicd/.github/workflows
+        run: |
+          for workflow in cicd/.github/workflows/*.yml; do
+            echo "Running $workflow"
+            act -W $workflow
+          done

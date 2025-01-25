@@ -1,9 +1,3 @@
-Tooplate.com HTML Templates
+For the ECR private pipeline, you put in permissions with a comment that "Required for OIDC authentication with AWS" but you're not using OIDC for authentication. You're actually using Access Keys and ID. 
 
-You can edit and use this template for any purpose (personal or commercial) of your website. You can modify text and images to suit your own website or client websites.
-
-You are NOT allowed to re-distribute our template ZIP file for any reason on your template sites or template collection sites.
-
-You can feature our templates on your blog posts that collect good templates. You can put a screenshot and a link back to our template page. That is helpful for us.
-
-THANK YOU
+More so, you did not integrate SAST scan into the pipelines and matched the various obfuscations to the various SOC 2 controls. 
