@@ -12,9 +12,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+
       - name: Trigger Workflows in cicd/.github/workflows
         run: |
           for workflow in cicd/.github/workflows/*.yml; do
-            echo "Running $workflow"
-            act -W $workflow
+            workflow_name=$(basename $workflow)
+            gh workflow run "$workflow_name"
           done
