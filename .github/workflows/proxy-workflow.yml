@@ -18,8 +18,11 @@ jobs:
           sudo apt-get install -y gh
 
       - name: Trigger Workflows in cicd/.github/workflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           for workflow in cicd/.github/workflows/*.yml; do
             workflow_name=$(basename $workflow)
             gh workflow run "$workflow_name"
           done
+
