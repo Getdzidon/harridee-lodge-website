@@ -8,11 +8,7 @@ on:
 
 env:
   IMAGE_NAME: harridee-webapp
-
-permissions:
-  contents: read
-  id-token: write  # Required for OIDC authentication with AWS
-
+  
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -32,12 +28,12 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         with:
           registry-type: private  # Set to 'public' if ECR is public, 'private' if it’s a private repository
-
+ 
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.ECR_REPOSITORY_URI }}:latest .
 
-      - name: Tag Docker image
+      - name: Tag Docker image for ECR
         run: |
           docker tag ${{ secrets.ECR_REPOSITORY_URI }}:latest ${{ secrets.ECR_REPOSITORY_URI }}:latest
 

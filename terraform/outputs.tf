@@ -16,7 +16,7 @@ output "instance_public_ips" {
 
 output "s3_bucket_name" {
   description = "The name of the created S3 bucket"
-  value       = aws_s3_bucket.harridee.bucket
+  value       = aws_s3_bucket.harridee.id
 }
 
 output "cloudfront_distribution_domain" {
