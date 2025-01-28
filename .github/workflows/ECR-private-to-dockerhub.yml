@@ -31,11 +31,11 @@ jobs:
  
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ECR_REPOSITORY_URI }}:latest .
+          docker build -t ${{ env.IMAGE_NAME }}:latest .
 
       - name: Tag Docker image for ECR
         run: |
-          docker tag ${{ secrets.ECR_REPOSITORY_URI }}:latest ${{ secrets.ECR_REPOSITORY_URI }}:latest
+          docker tag ${{ env.IMAGE_NAME }}:latest ${{ secrets.ECR_REPOSITORY_URI }}:latest
 
       - name: Push Docker image to Amazon ECR
         run: |
@@ -47,7 +47,7 @@ jobs:
 
       - name: Tag Image for Docker Hub
         run: |
-          docker tag ${{ secrets.ECR_REPOSITORY_URI }}:latest ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          docker tag ${{ env.IMAGE_NAME }}:latest ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Push to Docker Hub
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
