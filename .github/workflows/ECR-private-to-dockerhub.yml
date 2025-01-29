@@ -1,9 +1,9 @@
-name: Build and Push to AWS ECR Private Registry, then to DockerHub
+name: Build, Push to AWS ECR, and Deploy to EC2
 
 on:
   push:
     branches:
-      - main
+      - main  # Trigger deployment on changes to the main branch
 
 env:
   IMAGE_NAME: harridee-webapp
@@ -13,61 +13,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout Code for the first part of the job
+      # Step 1: Checkout code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Set up AWS Credentials
-      - name: Set up AWS Credentials
+      # Step 2: Set up AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Log in to Amazon ECR
+      # Step 3: Log in to Amazon ECR
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
         with:
-          registry-type: private  # Set to 'private' if it’s a private repository
+          registry-type: private
 
-      # Build Docker image
+      # Step 4: Build Docker image
       - name: Build Docker image
         run: |
           docker build -t ${{ env.IMAGE_NAME }}:latest .
 
-      # Generate unique image tag
-      - name: Generate unique image tag
+      # Step 5: Generate unique image tag using timestamp
+      - name: Generate unique image tag with timestamp
         id: generate_tag
         run: |
-          # Use commit SHA or a timestamp for unique tagging
-          IMAGE_TAG=${GITHUB_SHA:0:7}  # First 7 characters of the commit hash
+          IMAGE_TAG=$(date +'%Y%m%d%H%M%S')  # Using current timestamp (YYYYMMDDHHMMSS format)
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV  # Set the IMAGE_TAG as an environment variable
 
-      # Tag Docker image for ECR with unique tag
-      - name: Tag Docker image for ECR with unique tag
+      # Step 6: Tag Docker image for ECR with unique tag
+      - name: Tag Docker image for ECR with timestamp-based tag
         run: |
           docker tag ${{ env.IMAGE_NAME }}:latest ${{ secrets.ECR_REPOSITORY_URI }}:${{ env.IMAGE_TAG }}
 
-      # Push Docker image to Amazon ECR
+      # Step 7: Push Docker image to Amazon ECR
       - name: Push Docker image to Amazon ECR
         run: |
           docker push ${{ secrets.ECR_REPOSITORY_URI }}:${{ env.IMAGE_TAG }}
 
-      # Publishing image from ECR to Docker Hub (optional)
+      # Step 8: Login to Docker Hub (optional, remove if not needed)
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
 
-      - name: Tag Image for Docker Hub with unique tag
+      - name: Tag Image for Docker Hub with timestamp-based tag
         run: |
           docker tag ${{ env.IMAGE_NAME }}:latest ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
       - name: Push to Docker Hub
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-      #.................................... 
-
-      # SSH and deploy to EC2 instance
+      # Step 9: Deploy to EC2
       - name: Set up SSH private key
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > "Jomacs Demo.pem"
@@ -75,18 +71,21 @@ jobs:
 
       - name: Deploy to EC2 with Docker Compose
         run: |
-          # Use the current commit hash as the image tag
-          IMAGE_TAG=${GITHUB_SHA:0:7}  # This takes the first 7 characters of the commit hash
+          IMAGE_TAG=${{ env.IMAGE_TAG }}  # Use the timestamp-based image tag
 
           ssh -o StrictHostKeyChecking=no -i "Jomacs Demo.pem" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            # Install Docker Compose if not installed
+            # Update the package list and install Docker Compose if it's not already installed
             sudo apt-get update
             sudo apt-get install -y docker-compose || true
 
-            # Navigate to deployment directory
+            # Navigate to deployment directory, create it if doesn't exist
             cd /home/ubuntu/app || mkdir /home/ubuntu/app && cd /home/ubuntu/app
 
-            # Create docker-compose.yml with the commit hash tag
+            # Remove old containers and images first, if any
+            sudo docker-compose down --volumes --remove-orphans
+            sudo docker image prune -f
+
+            # Ensure docker-compose.yml is set to pull the correct image with timestamp tag
             cat > docker-compose.yml <<EOL
             version: "3"
             services:
@@ -97,19 +96,16 @@ jobs:
                 restart: always
             EOL
 
-            # Pull the latest image using the commit hash tag (Force to pull the latest)
+            # Pull the latest image from ECR, forcing the pull
             sudo docker-compose pull web
 
-            # Remove the old containers and images to ensure fresh deployment
-            sudo docker-compose down
-
-            # Recreate the containers and ensure the latest image is used
+            # Recreate containers to use the latest image
             sudo docker-compose up --force-recreate --no-deps -d web
 
-            # Clean up old images to save space
+            # Clean up any unused images
             sudo docker image prune -f
 
-            # Optional: Verify the image tag deployed is correct
+            # Optional: Verify deployment by listing the containers and images
             sudo docker ps -a
             sudo docker images
           EOF
