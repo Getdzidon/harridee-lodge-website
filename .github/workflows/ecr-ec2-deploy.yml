@@ -1,4 +1,4 @@
-name: Deploy to EC2 with Docker Compose
+name: Pull image from ECR, then deploy to EC2 with Docker Compose
 on:
   push:
     branches:
@@ -27,6 +27,10 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > "Jomacs Demo.pem"
           chmod 600 "Jomacs Demo.pem"
 
+      - name: Get the latest image tag (commit hash)
+        id: get_tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA:0:7}" >> $GITHUB_ENV  # Use commit hash as the tag
+
       - name: Deploy to EC2 with Docker Compose
         run: |
           ssh -o StrictHostKeyChecking=no -i "Jomacs Demo.pem" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
@@ -37,23 +41,23 @@ jobs:
             # Navigate to deployment directory
             cd /home/ubuntu/app || mkdir /home/ubuntu/app && cd /home/ubuntu/app
 
-            # Create docker-compose.yml if it doesn't exist
+            # Create docker-compose.yml with the unique image tag
             cat > docker-compose.yml <<EOL
             version: "3"
             services:
               web:
-                image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/harridee-webapp:latest
+                image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/harridee-webapp:${{ env.IMAGE_TAG }}
                 ports:
                   - "80:80"
                 restart: always
             EOL
 
-            # Pull latest image from ECR
+            # Pull the latest image from ECR using the unique tag (this ensures you're getting the newest image)
             sudo docker-compose pull web
             
-            # Restart with zero downtime
+            # Restart the web service with zero downtime
             sudo docker-compose up --no-deps -d web
             
-            # Clean up old images
+            # Clean up old images to save space
             sudo docker image prune -f
           EOF
