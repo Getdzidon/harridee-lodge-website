@@ -1,0 +1,48 @@
+#Pulls image from ECR  and deploy on EC2
+name: Deploy to EC2 from ECR
+on:
+  push:
+    branches:
+      - main  # Trigger on changes to the main branch
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+      # Step 2: Set up AWS CLI
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      # Step 3: Log in to ECR
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+        # Step 4: Pull Docker image from ECR
+      - name: Pull Docker image from ECR
+        run: |
+          sudo docker pull 471112610438.dkr.ecr.eu-central-1.amazonaws.com/harridee-webapp:latest
+      # Step 5: Set up SSH private key for EC2 access.
+      - name: Set up SSH private key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > "Jomacs Demo.pem"
+          chmod 600 "Jomacs Demo.pem"
+      # Step 6: Deploy to EC2
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i "Jomacs Demo.pem" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            # Ensure Docker is running on EC2
+            sudo systemctl start docker || true
+            # Stop and remove any old containers
+            sudo docker stop $(docker ps -q) || true
+            sudo docker rm $(docker ps -aq) || true
+            # Pull the latest Docker image
+            sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/harridee-webapp:latest
+            # Run the Docker container
+            sudo docker run -d -p 80:80 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/harridee-webapp:latest
+          EOF
+        
