@@ -97,12 +97,19 @@ jobs:
                 restart: always
             EOL
 
-            # Pull the image using the commit hash tag
+            # Pull the latest image using the commit hash tag (Force to pull the latest)
             sudo docker-compose pull web
 
-            # Force recreate the container to use the latest image
+            # Remove the old containers and images to ensure fresh deployment
+            sudo docker-compose down
+
+            # Recreate the containers and ensure the latest image is used
             sudo docker-compose up --force-recreate --no-deps -d web
 
             # Clean up old images to save space
             sudo docker image prune -f
+
+            # Optional: Verify the image tag deployed is correct
+            sudo docker ps -a
+            sudo docker images
           EOF
