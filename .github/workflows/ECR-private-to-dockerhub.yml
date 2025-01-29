@@ -17,7 +17,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2: Set up AWS Credentials.
+      # Step 2: Set up AWS Credentials
+      - name: Set up AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -63,12 +64,13 @@ jobs:
       - name: Push to Docker Hub
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-      # Step 9: Deploy to EC2
+      # Step 9: Set up SSH private key
       - name: Set up SSH private key
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > "Jomacs Demo.pem"
           chmod 600 "Jomacs Demo.pem"
 
+      # Step 10: Deploy to EC2 with Docker Compose
       - name: Deploy to EC2 with Docker Compose
         run: |
           IMAGE_TAG=${{ env.IMAGE_TAG }}  # Use the timestamp-based image tag
