@@ -75,19 +75,32 @@ jobs:
         run: |
           IMAGE_TAG=${{ env.IMAGE_TAG }}  # Use the timestamp-based image tag
 
+          # Log SSH connection
+          echo "Connecting to EC2 instance..."
+
           ssh -o StrictHostKeyChecking=no -i "Jomacs Demo.pem" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            # Log EC2 commands for debugging
+            echo "Running EC2 setup..."
+
             # Update the package list and install Docker Compose if it's not already installed
             sudo apt-get update
             sudo apt-get install -y docker-compose || true
 
             # Navigate to deployment directory, create it if doesn't exist
+            echo "Navigating to /home/ubuntu/app..."
             cd /home/ubuntu/app || mkdir /home/ubuntu/app && cd /home/ubuntu/app
 
             # Stop and remove old containers and images first, if any
+            echo "Stopping and removing old containers and images..."
             sudo docker-compose down --volumes --remove-orphans
             sudo docker image prune -f
 
+            # Verify if docker-compose.yml exists or not before overwriting
+            echo "Checking if docker-compose.yml exists..."
+            ls -l
+
             # Ensure docker-compose.yml is set to pull the correct image with timestamp tag
+            echo "Creating docker-compose.yml..."
             cat > docker-compose.yml <<EOL
             version: "3"
             services:
@@ -98,16 +111,26 @@ jobs:
                 restart: always
             EOL
 
+            # Log and verify the content of the docker-compose.yml file
+            echo "docker-compose.yml content:"
+            cat docker-compose.yml
+
             # Pull the latest image from ECR, forcing the pull
+            echo "Pulling the latest image from ECR..."
             sudo docker-compose pull web
 
             # Recreate containers to use the latest image
+            echo "Recreating containers with the latest image..."
             sudo docker-compose up --force-recreate --no-deps -d web
 
             # Clean up any unused images
+            echo "Cleaning up unused images..."
             sudo docker image prune -f
 
             # Optional: Verify deployment by listing the containers and images
+            echo "Listing all running containers..."
             sudo docker ps -a
+
+            echo "Listing all Docker images..."
             sudo docker images
           EOF
