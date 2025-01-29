@@ -33,7 +33,7 @@ jobs:
             # Install Docker Compose if not installed
             sudo apt-get update
             sudo apt-get install -y docker-compose || true
-
+            
             # Navigate to deployment directory
             cd /home/ubuntu/app || mkdir /home/ubuntu/app && cd /home/ubuntu/app
 
