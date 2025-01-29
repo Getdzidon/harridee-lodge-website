@@ -83,7 +83,7 @@ jobs:
             # Navigate to deployment directory, create it if doesn't exist
             cd /home/ubuntu/app || mkdir /home/ubuntu/app && cd /home/ubuntu/app
 
-            # Remove old containers and images first, if any
+            # Stop and remove old containers and images first, if any
             sudo docker-compose down --volumes --remove-orphans
             sudo docker image prune -f
 
