@@ -37,6 +37,6 @@ variable "instance_count" {
 }
 
 variable "bucket_name" {
-  default     = "harridee"
+  default     = "airbnb.harridee.com"
   description = "Name of the S3 bucket"
 }

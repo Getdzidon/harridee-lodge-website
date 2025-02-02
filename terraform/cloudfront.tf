@@ -1,4 +1,4 @@
-########################## CloudFront Distribution Resource ##########################
+############ CloudFront Distribution Resource for High availability #############
 # CloudFront Origin Access Control (Define it explicitly)
 resource "aws_cloudfront_origin_access_control" "default" {
   name                              = "default-oac"

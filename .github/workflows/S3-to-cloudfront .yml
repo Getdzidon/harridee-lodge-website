@@ -24,7 +24,7 @@ jobs:
 
       - name: Sync files to S3
         run: |
-          aws s3 sync . s3://${{ secrets.S3_BUCKET_NAME }} --delete --exclude ".*" --exclude "Dockerfile" --exclude "*.txt" --exclude "*.md"
+          aws s3 sync . s3://${{ secrets.S3_BUCKET_NAME }} --delete --exclude ".*" --exclude "Dockerfile" --exclude "*.txt" --exclude "*.md" --exclude "terraform/*"
 
 
       - name: Invalidate CloudFront cache

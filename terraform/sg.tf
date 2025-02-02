@@ -8,12 +8,12 @@ resource "aws_security_group" "default_vpc_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] #This is not allowed in Production or any enterprise environment
   }
 
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 80 # http
+    to_port     = 80  
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
